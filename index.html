@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- displays site properly based on user's device -->
+  <script src="https://kit.fontawesome.com/1a11e246e6.js" crossorigin="anonymous"></script>
+  <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <title>Frontend Mentor | Tip calculator app</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Bill
+
+  Select Tip %
+  5%
+  10%
+  15%
+  25%
+  50%
+  Custom
+
+  Number of People
+
+  Tip Amount
+  / person
+
+  Total
+  / person
+
+  Reset -->
+  
+  <main class="container">
+    <div class="left-part col">
+      <div class="bill col">
+        <label class="row" for="income">Bill <b class="error">Invalid Input</b></label>
+        <span class="income"><input id="income" type="number"></span>
+      </div>
+      <div class="col">
+        <label class="tip-label">Select Tip %<b class="error">Invalid Input</b></label>
+        <div class="tips row">
+        <button class="tip" tipValue ="0.05" >5%</button>
+        <button class="tip" tipValue="0.1">10%</button>
+        <button class="tip" tipValue="0.15">15%</button>
+        <button class="tip" tipValue="0.25">25%</button>
+        <button class="tip" tipValue="0.5">50%</button>
+        <input  class="tip custom" type="number" placeholder="Custom" >
+      </div>
+      </div>
+      <div class="people-input col">
+        <label class="row" for="people">Number of People <b class="error"></b> </label>
+        <span class="people"><input id="people"type="number"></span>
+      </div>
+    </div>
+    <div class="right-part col">
+      <div class="col">
+        <div class="tip-amount row">
+          <p><strong>Tip Amount</strong><br>/ person</p>
+          <b>$0.00</b>
+        </div>
+        <div class="total row">
+          <p><strong>Total</strong><br>/ person</p>
+          <b>$0.00</b>
+        </div>
+      </div>
+      <button class="reset">RESET</button>
+    </div>
+  </main>
+  <script>
+    let incomeInput = document.querySelector('span.income input');
+    let customTip = document.querySelector('input.custom');
+    let tipsButtons = document.querySelectorAll('button.tip');
+    let peopleInput = document.querySelector('span.people input');
+    let resetButton = document.querySelector('button.reset');
+    let allInputs = document.querySelectorAll('input');
+    let tipAmountContainer = document.querySelector('.tip-amount b');
+    let totalAmountContainer = document.querySelector('.total b');
+
+    let billValue = 0;
+    let tipValue = 0;
+    let peopleNumber = 0;
+    incomeInput.addEventListener('blur',function(){
+      let value = incomeInput.value;
+      let errorMessage = document.querySelector('.bill label .error');
+      if(value !==''){
+        if(value <= 0){
+          errorMessage.textContent = "Invalid Input";
+          errorMessage.style.opacity = 1;
+          incomeInput.classList.add('error');
+          billValue = 0;
+        }else{
+          billValue = value;
+          errorMessage.style.opacity = 0;
+          incomeInput.classList.remove('error');
+        }
+      }else{
+        billValue = 0;
+        errorMessage.textContent = "Required Input";
+        errorMessage.style.opacity = 1;
+        incomeInput.classList.add('error');
+      }      
+    });
+    customTip.addEventListener('blur',function(){
+      let value = customTip.value;
+      let errorMessage = document.querySelector('.tip-label .error');
+      if(value !=='' && isTipSelected()){
+        if(value <= 0){
+          errorMessage.textContent = "Invalid Input";
+          errorMessage.style.opacity = 1;
+          incomeInput.classList.add('error');
+          tipValue = 0;
+        }else{
+          tipValue = (value /100).toFixed(2);
+          document.querySelector('button.tip.selected').classList.remove('selected');
+          errorMessage.style.opacity = 0;
+          incomeInput.classList.remove('error');
+        }
+      }else{
+        tipValue = 0;
+        errorMessage.textContent = "Required Input";
+        errorMessage.style.opacity = 1;
+        incomeInput.classList.add('error');
+      }      
+    })
+    peopleInput.addEventListener('blur',function(){
+      let value = peopleInput.value;
+      let errorMessage = document.querySelector('.people-input label .error');
+      if(value !==''){
+        if(value <= 0 || !Number.isInteger(+value)){
+          errorMessage.textContent = "Invalid Input";
+          errorMessage.style.opacity = 1;
+          peopleInput.classList.add('error');
+          peopleNumber = 0;
+        }else{
+          peopleNumber = value;
+          errorMessage.style.opacity = 0;
+          peopleInput.classList.remove('error');
+        }
+      }else{
+        peopleNumber = 0;
+        errorMessage.textContent = "Required Input";
+        errorMessage.style.opacity = 1;
+        peopleInput.classList.add('error');
+      }
+    });
+    tipsButtons.forEach((tipButton)=>{
+      tipButton.addEventListener('click',function(){
+        if(isTipSelected()){
+          let selectedTip = document.querySelector('button.tip.selected');
+          
+          selectedTip.classList.remove('selected');
+        }
+        tipValue = tipButton.getAttribute('tipValue');
+        tipButton.classList.add('selected');
+      })
+    })
+
+    resetButton.addEventListener('click',function(){
+      allInputs.forEach((input)=>{
+        input.value='';
+
+      });
+      billValue = 0;
+      tipValue = 0;
+      peopleNumber = 0;
+      document.querySelector('button.tip.selected').classList.remove('selected');
+      tipAmountContainer.textContent = "$0.00";
+      totalAmountContainer.textContent = "$0.00";
+    })
+    setInterval(calculateTips,calculateTips());
+    function isTipSelected(){
+      let selectedTip = document.querySelector('button.selected');
+      return selectedTip != null;
+      
+    }
+    
+    function calculateTips(){
+      // console.log("Calculating Tips");
+      // console.log(billValue,tipValue,peopleNumber);
+      if(billValue > 0 && tipValue > 0 && peopleNumber > 0){
+        console.log("Calculating...");
+        billValue = Number.parseFloat(billValue);
+        tipValue = Number.parseFloat(tipValue);
+        peopleNumber = Number.parseFloat(peopleNumber);
+        let tipValuePerPerson =Number.parseFloat((( billValue * tipValue )/ peopleNumber).toFixed(2));
+        let total = Number.parseFloat((billValue / peopleNumber).toFixed(2)) + tipValuePerPerson;
+        
+        tipAmountContainer.textContent = `$${tipValuePerPerson.toFixed(2)}`;
+        totalAmountContainer.textContent = `$${total.toFixed(2)}`;
+      }
+    }
+
+  </script>
+</body>
+</html>
